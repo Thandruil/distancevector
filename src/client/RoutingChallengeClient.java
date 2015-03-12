@@ -277,8 +277,7 @@ public class RoutingChallengeClient implements Runnable {
 										System.err
 												.println("Could not buffer packet.");
 									}
-								} catch (IllegalArgumentException
-										| IndexOutOfBoundsException e) {
+								} catch (Exception e) {
 									System.err
 											.println("Could not parse packet.");
 
