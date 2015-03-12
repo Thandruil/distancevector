@@ -70,9 +70,11 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                     int oldDst = dataTable.get(i, 2) == i ? dataTable.get(i, 1) : -1;
                     if (oldDst == -1) {
                         if (dst != -1 && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1)) {
+                            dataTable.set(i, 1, dst);
+                            dataTable.set(i, 2, i);
                             isUpdated = true;
                         }
-                    } else {
+                    }
                         if (dst != oldDst) {
                             for (int j = 1; j < CLIENTS + 1; j++) {
                                 if (dataTable.get(j, 2) == i) {
@@ -96,7 +98,6 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                             }
                         }
                     }
-				}
 				if (isUpdated) {
 					for (int i = 1; i < CLIENTS + 1; i++) {
 						System.out.println(Arrays.toString(dataTable.getRow(i)));
