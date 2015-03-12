@@ -14,6 +14,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	public void init(LinkLayer linkLayer) {
 		this.linkLayer = linkLayer;
 		this.dataTable = new DataTable(3);
+		this.dataTable.addRow(new Integer[]{0, 0, 0});
 
 		for (int i = 1; i < CLIENTS + 1; i++) {
 			int distance = this.linkLayer.getLinkCost(i);
@@ -32,7 +33,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 				if (packet != null) {
 					DataTable data = packet.getData();
 					boolean isUpdated = false;
-					for (int i = 0; i < CLIENTS; i++) {
+					for (int i = 1; i < CLIENTS + 1; i++) {
 						Integer[] row = data.getRow(i);
 						if (row[1] != -1 && (row[1] < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
 							int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
@@ -44,6 +45,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 						}
 					}
 					if (isUpdated) {
+						updateForwardingTable();
 						broadcastTable();
 					}
 				}
@@ -60,10 +62,10 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	}
 	
 	public void updateForwardingTable() {
-		for (int i = 0; i < CLIENTS; i++) {
+		for (int i = 1; i < CLIENTS + 1; i++) {
 			BasicRoute route = new BasicRoute();
 			route.nextHop = dataTable.get(i, 2);
-			this.forwardingTable.put(i + 1, route);
+			this.forwardingTable.put(i, route);
 		}
 	}
 
