@@ -74,7 +74,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                             dataTable.set(i, 2, i);
                             isUpdated = true;
                         }
-                    }
+                    } /*
                         if (dst != oldDst) {
                             for (int j = 1; j < CLIENTS + 1; j++) {
                                 if (dataTable.get(j, 2) == i) {
@@ -96,14 +96,11 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                                     }
                                 }
                             }
-                        }
-                    }
+                        }*/
+                }
 				if (isUpdated) {
-					for (int i = 1; i < CLIENTS + 1; i++) {
-						System.out.println(Arrays.toString(dataTable.getRow(i)));
-					}
-					updateForwardingTable();
-					broadcastTable();
+                    updateForwardingTable();
+                    broadcastTable();
 				}
 				Thread.sleep(10);
 			}
@@ -144,6 +141,9 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 			route.nextHop = dataTable.get(i, 2);
 			this.forwardingTable.put(i, route);
 		}
+        for (int i = 1; i < CLIENTS + 1; i++) {
+            System.out.println(Arrays.toString(dataTable.getRow(i)));
+        }
 	}
 
 	@Override
