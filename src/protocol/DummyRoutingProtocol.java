@@ -72,7 +72,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                         System.out.println("Link to " + i + " changed from " + oldDst + " to " + dst);
                     }
                     if (oldDst == -1) {
-                        isUpdated = true;
+                        //isUpdated = true;
                     } else {
                         if (dst != oldDst) {
                             for (int j = 1; j < CLIENTS + 1; j++) {
