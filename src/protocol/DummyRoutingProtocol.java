@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import client.*;
+import com.sun.org.apache.xpath.internal.SourceTree;
 
 public class DummyRoutingProtocol implements IRoutingProtocol {
 	private static final int CLIENTS = 6;
@@ -104,7 +105,28 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	
 	public void broadcastTable() {
 		Packet packet = new Packet(this.linkLayer.getOwnAddress(), 0, this.dataTable);
-		this.linkLayer.transmit(packet);
+        for (int i = 1; i < CLIENTS + 1; i++) {
+            if (this.linkLayer.getLinkCost(i) != -1) {
+                if (neighboursTable[i] == null) {
+                    this.linkLayer.transmit(packet);
+                    return;
+                } else {
+                    for (int j = 1; j < CLIENTS + 1; j++) {
+                        int hisDst = neighboursTable[i].get(j, 1);
+                        if (hisDst == -1 && dataTable.get(j, 1) != -1) {
+                            this.linkLayer.transmit(packet);
+                            return;
+                        }
+                        if (dataTable.get(j, 1) + this.linkLayer.getLinkCost(i) < hisDst) {
+                            this.linkLayer.transmit(packet);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("SAVED A BROADCAST");
+
 	}
 	
 	public void updateForwardingTable() {
