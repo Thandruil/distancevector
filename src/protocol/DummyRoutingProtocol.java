@@ -141,6 +141,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 			route.nextHop = dataTable.get(i, 2);
 			this.forwardingTable.put(i, route);
 		}
+        System.out.println(forwardingTable.toString());
         for (int i = 1; i < CLIENTS + 1; i++) {
             System.out.println(Arrays.toString(dataTable.getRow(i)));
         }
