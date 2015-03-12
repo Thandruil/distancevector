@@ -15,7 +15,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	@Override
 	public void init(LinkLayer linkLayer) {
 		this.linkLayer = linkLayer;
-        neighboursTable = new DataTable[CLIENTS];
+        neighboursTable = new DataTable[CLIENTS+1];
 		System.out.println(linkLayer.getOwnAddress());
 
 		this.dataTable = new DataTable(3);
@@ -41,7 +41,6 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 			while (true) {
 				// Try to receive a packet
 				Packet packet = this.linkLayer.receive();
-
 				boolean isUpdated = false;
 				if (packet != null) {
 					DataTable data = packet.getData();
@@ -66,7 +65,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 					int dst = this.linkLayer.getLinkCost(i);
                     int oldDst = dataTable.get(i, 1);
                     if (dst != oldDst) {
-                        for (int j = 1; j < CLIENTS + 1; i++) {
+                        for (int j = 1; j < CLIENTS + 1; j++) {
                             if (dataTable.get(j, 2) == i) {
                                 if (dst == -1) {
                                     dataTable.set(j, 1, -1);
@@ -75,7 +74,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                                     dataTable.set(j, 1, dataTable.get(j, 1) + dst - oldDst);
                                     isUpdated = true;
                                 }
-                                for (int k = 1; k < CLIENTS + 1; i++) {
+                                for (int k = 1; k < CLIENTS + 1; k++) {
                                     if (neighboursTable[k] != null &&
                                             neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1) < dataTable.get(j, 1) &&
                                             neighboursTable[k].get(j, 1) != -1) {
