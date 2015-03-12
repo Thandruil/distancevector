@@ -68,11 +68,10 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                     }
 					int dst = this.linkLayer.getLinkCost(i);
                     int oldDst = dataTable.get(i, 2) == i ? dataTable.get(i, 1) : -1;
-                    if (dst != oldDst) {
-                        System.out.println("Link to " + i + " changed from " + oldDst + " to " + dst);
-                    }
                     if (oldDst == -1) {
-                        //isUpdated = true;
+                        if (dst != -1 && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1)) {
+                            isUpdated = true;
+                        }
                     } else {
                         if (dst != oldDst) {
                             for (int j = 1; j < CLIENTS + 1; j++) {
