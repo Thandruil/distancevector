@@ -46,18 +46,24 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 				// Try to receive a packet
 				Packet packet = this.linkLayer.receive();
 				boolean isUpdated = false;
+                boolean[] check = new boolean[CLIENTS + 1];
 				if (packet != null) {
 					DataTable data = packet.getData();
                     neighboursTable[packet.getSourceAddress()] = data;
 					for (int i = 1; i < CLIENTS + 1; i++) {
 						Integer[] row = data.getRow(i);
 						int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
-						if (i != this.linkLayer.getOwnAddress() && row[1] != -1 && row[2] != linkLayer.getOwnAddress() && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
-							if (dataTable.get(i, 1) != dst || dataTable.get(i, 2) != packet.getSourceAddress()) {
+						if (i != this.linkLayer.getOwnAddress() && (row[1] != -1 || dataTable.get(i, 2) == packet.getSourceAddress())  &&
+                                (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
+                            if (dataTable.get(i, 1) != dst || dataTable.get(i, 2) != packet.getSourceAddress()) {
                                 System.out.println("source:" + packet.getSourceAddress());
                                 System.out.println("remote " + i + ":" + Arrays.toString(row));
 								System.out.println("local " + i + ":" + Arrays.toString(dataTable.getRow(i)));
 								isUpdated = true;
+                                if (row[1] == -1) {
+                                    dst = -1;
+                                    check[i] = true;
+                                }
 								dataTable.set(i, 1, dst);
 								dataTable.set(i, 2, dataTable.get(packet.getSourceAddress(), 2));
 							}
@@ -80,7 +86,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                         }
                     }
 
-                    if (dst != oldDst) {
+                    if (dst != oldDst || check[i] == true) {
                         for (int j = 1; j < CLIENTS + 1; j++) {
                             if (dataTable.get(j, 2) == i) {
                                 System.out.println("Link " + i + " changed to " + dst + " from " + oldDst);
@@ -93,16 +99,23 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                                     isUpdated = true;
                                 }
                                 for (int k = 1; k < CLIENTS + 1; k++) {
-                                    if (neighboursTable[k] != null && linkLayer.getLinkCost(k) != -1 && (
-                                            (neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1) < dataTable.get(j, 1) &&
-                                            neighboursTable[k].get(j, 1) != -1) ||
+                                    if (neighboursTable[k] != null && linkLayer.getLinkCost(k) != -1 && neighboursTable[k].get(j, 1) != -1 && neighboursTable[k].get(j, 2) != linkLayer.getOwnAddress() &&(
+                                            (((neighboursTable[k].get(j, 1) + linkLayer.getLinkCost(k) < dataTable.get(j, 1) || dataTable.get(j, 1) == -1) &&
+                                            neighboursTable[k].get(j, 1) != -1)) ||
                                             dataTable.get(j, 1) == -1)){
-                                        dataTable.set(j, 1, neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1));
+                                        dataTable.set(j, 1, neighboursTable[k].get(j, 1) + linkLayer.getLinkCost(k));
                                         dataTable.set(j, 2, k);
                                         isUpdated = true;
                                     }
                                 }
                             }
+                        }
+                    }
+                    if (check[i]) {
+                        if (linkLayer.getLinkCost(i) != -1) {
+                            dataTable.set(i, 1, linkLayer.getLinkCost(i));
+                            dataTable.set(i, 2, i);
+                            isUpdated = true;
                         }
                     }
                 }
@@ -131,7 +144,8 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                             this.linkLayer.transmit(packet);
                             return;
                         }
-                        if (dataTable.get(j, 1) + this.linkLayer.getLinkCost(i) < hisDst || neighboursTable[i].get(j, 2) == linkLayer.getOwnAddress()) {
+                        if (dataTable.get(j, 1) + this.linkLayer.getLinkCost(i) < hisDst ||
+                                neighboursTable[i].get(j, 2) == linkLayer.getOwnAddress()) {
                             this.linkLayer.transmit(packet);
                             return;
                         }
@@ -139,7 +153,9 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                 }
             }
         }
+        //this.linkLayer.transmit(packet);
         System.out.println("SAVED A BROADCAST");
+        return;
 
 	}
 	
