@@ -74,29 +74,33 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                             dataTable.set(i, 2, i);
                             isUpdated = true;
                         }
-                    } /*
-                        if (dst != oldDst) {
-                            for (int j = 1; j < CLIENTS + 1; j++) {
-                                if (dataTable.get(j, 2) == i) {
-                                    if (dst == -1) {
-                                        dataTable.set(j, 1, -1);
+                    }
+
+                    if (dst != oldDst) {
+                        for (int j = 1; j < CLIENTS + 1; j++) {
+                            if (dataTable.get(j, 2) == i) {
+                                System.out.println("Link " + i + " changed to " + dst + " from " + oldDst);
+                                System.out.println("This breaks link with " + j);
+                                if (dst == -1) {
+                                    dataTable.set(j, 1, -1);
+                                    isUpdated = true;
+                                } else {
+                                    dataTable.set(j, 1, dataTable.get(j, 1) + dst - oldDst);
+                                    isUpdated = true;
+                                }
+                                for (int k = 1; k < CLIENTS + 1; k++) {
+                                    if (neighboursTable[k] != null && linkLayer.getLinkCost(k) != -1 && (
+                                            (neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1) < dataTable.get(j, 1) &&
+                                            neighboursTable[k].get(j, 1) != -1) ||
+                                            dataTable.get(j, 1) == -1)){
+                                        dataTable.set(j, 1, neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1));
+                                        dataTable.set(j, 2, k);
                                         isUpdated = true;
-                                    } else {
-                                        dataTable.set(j, 1, dataTable.get(j, 1) + dst - oldDst);
-                                        isUpdated = true;
-                                    }
-                                    for (int k = 1; k < CLIENTS + 1; k++) {
-                                        if (neighboursTable[k] != null &&
-                                                neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1) < dataTable.get(j, 1) &&
-                                                neighboursTable[k].get(j, 1) != -1) {
-                                            dataTable.set(j, 1, neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1));
-                                            dataTable.set(j, 2, k);
-                                            isUpdated = true;
-                                        }
                                     }
                                 }
                             }
-                        }*/
+                        }
+                    }
                 }
 				if (isUpdated) {
                     updateForwardingTable();
@@ -123,7 +127,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                             this.linkLayer.transmit(packet);
                             return;
                         }
-                        if (dataTable.get(j, 1) + this.linkLayer.getLinkCost(i) < hisDst) {
+                        if (dataTable.get(j, 1) + this.linkLayer.getLinkCost(i) < hisDst || neighboursTable[i].get(j, 2) == linkLayer.getOwnAddress()) {
                             this.linkLayer.transmit(packet);
                             return;
                         }
