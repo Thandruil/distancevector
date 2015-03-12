@@ -49,7 +49,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 					for (int i = 1; i < CLIENTS + 1; i++) {
 						Integer[] row = data.getRow(i);
 						int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
-						if (i != this.linkLayer.getOwnAddress() && row[1] != -1 && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
+						if (i != this.linkLayer.getOwnAddress() && row[1] != -1 && row[2] != linkLayer.getOwnAddress() && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
 							if (dataTable.get(i, 1) != dst || dataTable.get(i, 2) != packet.getSourceAddress()) {
                                 System.out.println("source:" + packet.getSourceAddress());
                                 System.out.println("remote " + i + ":" + Arrays.toString(row));
