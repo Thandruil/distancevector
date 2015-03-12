@@ -153,7 +153,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                 }
             }
         }
-        //this.linkLayer.transmit(packet);
+        this.linkLayer.transmit(packet);
         System.out.println("SAVED A BROADCAST");
         return;
 
