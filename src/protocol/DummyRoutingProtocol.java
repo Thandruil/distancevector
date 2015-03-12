@@ -41,9 +41,10 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 			while (true) {
 				// Try to receive a packet
 				Packet packet = this.linkLayer.receive();
+
+				boolean isUpdated = false;
 				if (packet != null) {
 					DataTable data = packet.getData();
-					boolean isUpdated = false;
 					for (int i = 1; i < CLIENTS + 1; i++) {
 						Integer[] row = data.getRow(i);
 						int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
@@ -54,17 +55,33 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 								System.out.println("local " + i + ":" + Arrays.toString(dataTable.getRow(i)));
 								isUpdated = true;
 								dataTable.set(i, 1, dst);
-								dataTable.set(i, 2, packet.getSourceAddress());
+								dataTable.set(i, 2, dataTable.get(packet.getSourceAddress(), 2));
 							}
 						}
 					}
-					if (isUpdated) {
-						for (int i = 1; i < CLIENTS + 1; i++) {
-							System.out.println(Arrays.toString(dataTable.getRow(i)));
+
+				}
+				for (int i = 1; i < CLIENTS + 1; i++) {
+					int dst = this.linkLayer.getLinkCost(i);
+					if (dataTable.get(i, 2) == i) {
+						if (dataTable.get(i, 1) != dst) {
+							dataTable.set(i, 1, dst);
+							System.out.println("Link " + i + " updated to " + dst);
+							isUpdated = true;
 						}
-						updateForwardingTable();
-						broadcastTable();
 					}
+					if (dst != -1 && dst < dataTable.get(i, 1)) {
+						isUpdated = true;
+						dataTable.set(i, 1, dst);
+						dataTable.set(i, 2, i);
+					}
+				}
+				if (isUpdated) {
+					for (int i = 1; i < CLIENTS + 1; i++) {
+						System.out.println(Arrays.toString(dataTable.getRow(i)));
+					}
+					updateForwardingTable();
+					broadcastTable();
 				}
 				Thread.sleep(10);
 			}
