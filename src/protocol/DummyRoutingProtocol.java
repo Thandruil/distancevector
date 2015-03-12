@@ -23,9 +23,13 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 
 		for (int i = 1; i < CLIENTS + 1; i++) {
 			int distance = this.linkLayer.getLinkCost(i);
-			this.dataTable.addRow(new Integer[]{i, distance, this.linkLayer.getOwnAddress()});
+			this.dataTable.addRow(new Integer[]{i, distance, i});
 		}
 		this.dataTable.set(this.linkLayer.getOwnAddress(), 1, 0);
+
+		for (int i = 1; i < CLIENTS + 1; i++) {
+			System.out.println(Arrays.toString(dataTable.getRow(i)));
+		}
 
 		updateForwardingTable();
 		broadcastTable();
@@ -42,8 +46,8 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 					boolean isUpdated = false;
 					for (int i = 1; i < CLIENTS + 1; i++) {
 						Integer[] row = data.getRow(i);
-						if (row[1] != -1 && (row[1] < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
-							int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
+						int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
+						if (row[1] != -1 && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
 							if (dataTable.get(i, 1) != dst || dataTable.get(i, 2) != packet.getSourceAddress()) {
 								System.out.println("source:" + packet.getSourceAddress());
 								System.out.println("remote " + i + ":" + Arrays.toString(row));
@@ -55,6 +59,9 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 						}
 					}
 					if (isUpdated) {
+						for (int i = 1; i < CLIENTS + 1; i++) {
+							System.out.println(Arrays.toString(dataTable.getRow(i)));
+						}
 						updateForwardingTable();
 						broadcastTable();
 					}
