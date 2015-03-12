@@ -12,11 +12,13 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	private LinkLayer linkLayer;
 	private ConcurrentHashMap<Integer, BasicRoute> forwardingTable = new ConcurrentHashMap<Integer, BasicRoute>();
 	private DataTable dataTable;
+    private int[] oldDist;
     private DataTable[] neighboursTable;
 	@Override
 	public void init(LinkLayer linkLayer) {
 		this.linkLayer = linkLayer;
         neighboursTable = new DataTable[CLIENTS+1];
+        oldDist = new int[CLIENTS+1];
 		System.out.println(linkLayer.getOwnAddress());
 
 		this.dataTable = new DataTable(3);
@@ -24,6 +26,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 
 		for (int i = 1; i < CLIENTS + 1; i++) {
 			int distance = this.linkLayer.getLinkCost(i);
+            oldDist[i] = distance;
 			this.dataTable.addRow(new Integer[]{i, distance, i});
 		}
 		this.dataTable.set(this.linkLayer.getOwnAddress(), 1, 0);
@@ -67,7 +70,8 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                         continue;
                     }
 					int dst = this.linkLayer.getLinkCost(i);
-                    int oldDst = dataTable.get(i, 2) == i ? dataTable.get(i, 1) : -1;
+                    int oldDst = oldDist[i];
+                    oldDist[i] = dst;
                     if (oldDst == -1) {
                         if (dst != -1 && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1)) {
                             dataTable.set(i, 1, dst);
