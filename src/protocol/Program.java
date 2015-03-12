@@ -135,9 +135,7 @@ public class Program {
 		try {
 			return (IRoutingProtocol) protocolImpl.getConstructor(new Class[0])
 					.newInstance(new Object[0]);
-		} catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
