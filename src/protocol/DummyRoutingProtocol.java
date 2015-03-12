@@ -48,11 +48,11 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
                     neighboursTable[packet.getSourceAddress()] = data;
 					for (int i = 1; i < CLIENTS + 1; i++) {
 						Integer[] row = data.getRow(i);
-                        System.out.println("source:" + packet.getSourceAddress());
-                        System.out.println("remote " + i + ":" + Arrays.toString(row));
 						int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
 						if (i != this.linkLayer.getOwnAddress() && row[1] != -1 && (dst < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
 							if (dataTable.get(i, 1) != dst || dataTable.get(i, 2) != packet.getSourceAddress()) {
+                                System.out.println("source:" + packet.getSourceAddress());
+                                System.out.println("remote " + i + ":" + Arrays.toString(row));
 								System.out.println("local " + i + ":" + Arrays.toString(dataTable.getRow(i)));
 								isUpdated = true;
 								dataTable.set(i, 1, dst);
@@ -63,31 +63,40 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 
 				}
 				for (int i = 1; i < CLIENTS + 1; i++) {
+                    if (i == linkLayer.getOwnAddress()) {
+                        continue;
+                    }
 					int dst = this.linkLayer.getLinkCost(i);
-                    int oldDst = dataTable.get(i, 1);
+                    int oldDst = dataTable.get(i, 2) == i ? dataTable.get(i, 1) : -1;
                     if (dst != oldDst) {
-                        for (int j = 1; j < CLIENTS + 1; j++) {
-                            if (dataTable.get(j, 2) == i) {
-                                if (dst == -1) {
-                                    dataTable.set(j, 1, -1);
-                                    isUpdated = true;
-                                } else {
-                                    dataTable.set(j, 1, dataTable.get(j, 1) + dst - oldDst);
-                                    isUpdated = true;
-                                }
-                                for (int k = 1; k < CLIENTS + 1; k++) {
-                                    if (neighboursTable[k] != null &&
-                                            neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1) < dataTable.get(j, 1) &&
-                                            neighboursTable[k].get(j, 1) != -1) {
-                                        dataTable.set(j, 1, neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1));
-                                        dataTable.set(j, 2, k);
+                        System.out.println("Link to " + i + " changed from " + oldDst + " to " + dst);
+                    }
+                    if (oldDst == -1) {
+                        isUpdated = true;
+                    } else {
+                        if (dst != oldDst) {
+                            for (int j = 1; j < CLIENTS + 1; j++) {
+                                if (dataTable.get(j, 2) == i) {
+                                    if (dst == -1) {
+                                        dataTable.set(j, 1, -1);
                                         isUpdated = true;
+                                    } else {
+                                        dataTable.set(j, 1, dataTable.get(j, 1) + dst - oldDst);
+                                        isUpdated = true;
+                                    }
+                                    for (int k = 1; k < CLIENTS + 1; k++) {
+                                        if (neighboursTable[k] != null &&
+                                                neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1) < dataTable.get(j, 1) &&
+                                                neighboursTable[k].get(j, 1) != -1) {
+                                            dataTable.set(j, 1, neighboursTable[k].get(j, 1) + dataTable.get(dataTable.get(k, 2), 1));
+                                            dataTable.set(j, 2, k);
+                                            isUpdated = true;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-
 				}
 				if (isUpdated) {
 					for (int i = 1; i < CLIENTS + 1; i++) {
