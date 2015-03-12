@@ -1,5 +1,7 @@
 package protocol;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import client.*;
@@ -13,6 +15,9 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	@Override
 	public void init(LinkLayer linkLayer) {
 		this.linkLayer = linkLayer;
+
+		System.out.println(linkLayer.getOwnAddress());
+
 		this.dataTable = new DataTable(3);
 		this.dataTable.addRow(new Integer[]{0, 0, 0});
 
@@ -20,6 +25,8 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 			int distance = this.linkLayer.getLinkCost(i);
 			this.dataTable.addRow(new Integer[]{i, distance, this.linkLayer.getOwnAddress()});
 		}
+		this.dataTable.set(this.linkLayer.getOwnAddress(), 1, 0);
+
 		updateForwardingTable();
 		broadcastTable();
 	}
@@ -38,6 +45,9 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 						if (row[1] != -1 && (row[1] < dataTable.get(i, 1) || dataTable.get(i, 1) == -1 || dataTable.get(i, 2) == packet.getSourceAddress())) {
 							int dst = row[1] + dataTable.get(packet.getSourceAddress(), 1);
 							if (dataTable.get(i, 1) != dst || dataTable.get(i, 2) != packet.getSourceAddress()) {
+								System.out.println("source:" + packet.getSourceAddress());
+								System.out.println("remote " + i + ":" + Arrays.toString(row));
+								System.out.println("local " + i + ":" + Arrays.toString(dataTable.getRow(i)));
 								isUpdated = true;
 								dataTable.set(i, 1, dst);
 								dataTable.set(i, 2, packet.getSourceAddress());
